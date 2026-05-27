@@ -1,0 +1,65 @@
+//---------------------------------------------------------------DIA 3---------------------------------------------------------------
+
+class GerenciamentoCentral {
+    private var instrutores: [String: Instrutor] = [:]
+    private var alunos: [String: Aluno] = [:]
+    private var equipamentos: [String: EquipamentoFisico] = [:]
+    private var aulas: [String: ContratoAula] = [:]
+    
+    func cadastrarInstrutor(instrutor: Instrutor) -> Bool {
+        if instrutores[instrutor.email] == nil {
+            instrutores[instrutor.email] = instrutor
+            return true
+        }
+        return false
+    }
+    
+    func cadastrarAluno(aluno: Aluno) -> Bool {
+        if alunos[aluno.email] == nil && alunos[aluno.matricula] == nil {
+            alunos[aluno.email] = aluno
+            alunos[aluno.matricula] = aluno
+            return true
+        }
+        return false
+    }
+    
+    func cadastrarEquipamento(equipamento: EquipamentoFisico) -> Bool {
+        if equipamentos[equipamento.nomeItem] == nil {
+            equipamentos[equipamento.nomeItem] = equipamento
+            return true
+        }
+        return false
+    }
+    
+    func cadastrarAula(aula: ContratoAula) -> Bool {
+        if aulas[aula.nome] == nil {
+            aulas[aula.nome] = aula
+            return true
+        }
+        return false
+    }
+    
+    func realizarManutencaoEquipamentos() -> [String] {
+        var falhas: [String] = []
+        for equipamento in equipamentos.values {
+            let reparoRealizado = equipamento.realizarReparo(data: Date(), statusRegularidade: true)
+            if !reparoRealizado {
+                falhas.append(equipamento.nomeItem)
+            }
+        }
+        return falhas
+    }
+    
+    func agendarTreinoPersonal(alunoEmail: String, instrutorEmail: String, categoria: CategoriaAula, descricao: String) -> Bool {
+        guard let aluno = alunos[alunoEmail], let instrutor = instrutores[instrutorEmail] else {
+            return false
+        }
+        
+        if aluno.plano.incluiPersonalTrainer {
+            let treinoPersonal = TreinoPersonal(nome: "Treino Personal", instrutor: instrutor, categoria: categoria, descricao: descricao, aluno: aluno)
+            aulas[treinoPersonal.nome] = treinoPersonal
+            return true
+        }
+        
+        return false
+    }

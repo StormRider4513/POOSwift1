@@ -1,0 +1,81 @@
+//---------------------------------------------------------------DIA 2---------------------------------------------------------------
+protocol ContratoManutencao {
+    var nomeItem: String { get }
+    var historico: [String] { get }
+    
+    func realizarReparo(data: Date, statusRegularidade: Bool) -> Bool
+}
+
+class EquipamentoFisico: ContratoManutencao {
+    var nomeItem: String
+    var historico: [String]
+    var estadoFuncionamento: Bool
+    
+    init(nomeItem: String, estadoFuncionamento: Bool) {
+        self.nomeItem = nomeItem
+        self.estadoFuncionamento = estadoFuncionamento
+        self.historico = []
+    }
+    
+    func realizarReparo(data: Date, statusRegularidade: Bool) -> Bool {
+        if !estadoFuncionamento {
+            let reparoInfo = "Reparo realizado em \(data) com status de regularidade: \(statusRegularidade)"
+            historico.append(reparoInfo)
+            estadoFuncionamento = true
+            return true
+        } else {
+            return false
+        }
+    }
+}
+
+protocol ContratoAula {
+    var nome: String { get }
+    var instrutor: Instrutor { get }
+    var categoria: CategoriaAula { get }
+    var descricao: String { get }
+}
+
+class TurmaColetiva: ContratoAula {
+    var nome: String
+    var instrutor: Instrutor
+    var categoria: CategoriaAula
+    var descricao: String
+    var capacidadeMaxima: Int
+    var capacidadeMinima: Int
+    private var inscritos: [Aluno]
+    
+    init(nome: String, instrutor: Instrutor, categoria: CategoriaAula, descricao: String, capacidadeMaxima: Int, capacidadeMinima: Int) {
+        self.nome = nome
+        self.instrutor = instrutor
+        self.categoria = categoria
+        self.descricao = descricao
+        self.capacidadeMaxima = capacidadeMaxima
+        self.capacidadeMinima = capacidadeMinima
+        self.inscritos = []
+    }
+    
+    func inscreverAluno(aluno: Aluno) -> Bool {
+        if inscritos.count < capacidadeMaxima && !inscritos.contains(where: { $0.matricula == aluno.matricula }) {
+            inscritos.append(aluno)
+            return true
+        }
+        return false
+    }
+}
+
+class TreinoPersonal: ContratoAula {
+    var nome: String
+    var instrutor: Instrutor
+    var categoria: CategoriaAula
+    var descricao: String
+    var aluno: Aluno
+    
+    init(nome: String, instrutor: Instrutor, categoria: CategoriaAula, descricao: String, aluno: Aluno) {
+        self.nome = nome
+        self.instrutor = instrutor
+        self.categoria = categoria
+        self.descricao = descricao
+        self.aluno = aluno
+    }
+}
