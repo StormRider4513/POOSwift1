@@ -1,31 +1,44 @@
 //---------------------------------------------------------------DIA 2---------------------------------------------------------------
 protocol ContratoManutencao {
     var nomeItem: String { get }
-    var historico: [String] { get }
-    
-    func realizarReparo(data: Date, statusRegularidade: Bool) -> Bool
+    var historico: [String] { get set }
+
+    func realizarReparo(
+        data: Date,
+        statusRegularidade: Bool
+    ) -> Bool
 }
 
 class EquipamentoFisico: ContratoManutencao {
+
     var nomeItem: String
     var historico: [String]
     var estadoFuncionamento: Bool
-    
+
     init(nomeItem: String, estadoFuncionamento: Bool) {
         self.nomeItem = nomeItem
         self.estadoFuncionamento = estadoFuncionamento
         self.historico = []
     }
-    
-    func realizarReparo(data: Date, statusRegularidade: Bool) -> Bool {
+
+    func realizarReparo(
+        data: Date,
+        statusRegularidade: Bool
+    ) -> Bool {
+
+        // defeituoso = falha obrigatória
         if !estadoFuncionamento {
-            let reparoInfo = "Reparo realizado em \(data) com status de regularidade: \(statusRegularidade)"
-            historico.append(reparoInfo)
-            estadoFuncionamento = true
-            return true
-        } else {
             return false
         }
+
+        let reparo = """
+        Reparo em \(data)
+        Regularidade: \(statusRegularidade)
+        """
+
+        historico.append(reparo)
+
+        return true
     }
 }
 

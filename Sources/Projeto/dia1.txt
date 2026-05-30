@@ -38,30 +38,46 @@ let planoMensal = PlanoAssinatura(nome: "Mensal", valorMensalidade: 100.0, inclu
 let planoTrimestral = PlanoAssinatura(nome: "Trimestral", valorMensalidade: 270.0, incluiPersonalTrainer: true, limiteAulasColetivas: 10, duracaoMeses: 3)
 let planoAnual = PlanoAssinatura(nome: "Anual", valorMensalidade: 1000.0, incluiPersonalTrainer: true, limiteAulasColetivas: 20, duracaoMeses: 12)
 
+let catalogoPlanos: [String: PlanoAssinatura] = [
+    "Mensal": planoMensal,
+    "Trimestral": planoTrimestral,
+    "Anual": planoAnual
+]
+
 class Pessoa {
     var nome: String
     var email: String
-    
-    init(nome: String, email: String, funcao: String) {
+
+    init(nome: String, email: String) {
         self.nome = nome
         self.email = email
     }
 
-    func descricao() -> String {
-        return "Nome: \(nome), Email: \(email)"
+    func funcaoDescritiva() -> String {
+        return "Pessoa cadastrada"
     }
 }
-
 class Aluno: Pessoa {
     var matricula: String
     var plano: PlanoAssinatura
     var nivel: NivelExperiencia
-    
-    init(nome: String, email: String, funcao: String, matricula: String, plano: PlanoAssinatura, nivel: NivelExperiencia) {
+
+    init(
+        nome: String,
+        email: String,
+        matricula: String,
+        plano: PlanoAssinatura,
+        nivel: NivelExperiencia
+    ) {
         self.matricula = matricula
         self.plano = plano
         self.nivel = nivel
-        super.init(nome: nome, email: email, funcao: funcao)
+
+        super.init(nome: nome, email: email)
+    }
+
+    override func funcaoDescritiva() -> String {
+        return "Aluno da academia"
     }
 
     func atualizarPlano(novoPlano: PlanoAssinatura) {
@@ -75,9 +91,13 @@ class Aluno: Pessoa {
 
 class Instrutor: Pessoa {
     var especialidade: CategoriaAula
-    
-    init(nome: String, email: String, funcao: String, especialidade: CategoriaAula) {
+
+    init(nome: String, email: String, especialidade: CategoriaAula) {
         self.especialidade = especialidade
-        super.init(nome: nome, email: email, funcao: funcao)
+        super.init(nome: nome, email: email)
+    }
+
+    override func funcaoDescritiva() -> String {
+        return "Instrutor especializado em \(especialidade)"
     }
 }
