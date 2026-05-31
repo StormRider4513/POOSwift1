@@ -1,12 +1,21 @@
+//Nome: Ana Clara Cândido Pereira
+//---------------------------------------------------------------------------------------------------------DIA 1----------------------------------------------------------------------------------------------------------
+// Dia 1: Estruturas Base, Entidades de Negócio e Herança
+// Nesta primeira etapa, vocês deverão construir as fundações do sistema identificando os domínios fechados e as entidades principais. Iniciem criando conjuntos fechados (tipos de valor) para representar o nível de experiência do aluno (Iniciante, Intermediário, Avançado) e as categorias de aulas oferecidas (Musculação, Spinning, Yoga, Funcional, Luta).
+
+// Em seguida, estruturem a entidade que representa os planos de assinatura da academia. Esta entidade deve conter propriedades estritas e obrigatórias de negócio: nome, valor da mensalidade, indicador de inclusão de personal trainer, limite de aulas coletivas e duração em meses. Crie um catálogo em memória simulando um banco de dados com instâncias pré-definidas (Mensal, Trimestral, Anual).
+
+// Por fim, estruturem o cadastro de indivíduos utilizando uma hierarquia de base. Modelem uma entidade genérica para pessoas (contendo nome, e-mail e uma função descritiva) e derivem desta base duas novas entidades: Alunos (com matrícula, plano e nível) e Instrutores (com especialidade). Os alunos devem poder ter seus planos e níveis atualizados dinamicamente.
+
 import Foundation
-//------------------------------------------------DIA 1---------------------------------------------------------------
-enum NivelExperiencia {
+
+enum NivelExperiencia { //conjunto fechado para representar o nível de experiência do aluno
     case iniciante
     case intermediario
     case avancado
 }
 
-enum CategoriaAula {
+enum CategoriaAula { //conjunto fechado para representar as categorias de aulas oferecidas
     case musculacao
     case spinning
     case yoga
@@ -14,13 +23,18 @@ enum CategoriaAula {
     case luta
 }
 
-class PlanoAssinatura {
+enum TipoUsuario { //conjunto fechado para representar os tipos de usuário na academia
+    case aluno
+    case instrutor
+}
+
+class PlanoAssinatura { //classe que representa os planos de assinatura da academia, com as propriedades obrigatórias de negócio
     var nome: String
     var valorMensalidade: Double
     var incluiPersonalTrainer: Bool
     var limiteAulasColetivas: Int
     var duracaoMeses: Int
-    
+
     init(nome: String, valorMensalidade: Double, incluiPersonalTrainer: Bool, limiteAulasColetivas: Int, duracaoMeses: Int) {
         self.nome = nome
         self.valorMensalidade = valorMensalidade
@@ -28,23 +42,39 @@ class PlanoAssinatura {
         self.limiteAulasColetivas = limiteAulasColetivas
         self.duracaoMeses = duracaoMeses
     }
-
-    func descricao() -> String {
-        return "Plano: \(nome), Valor: \(valorMensalidade), Personal Trainer: \(incluiPersonalTrainer), Limite Aulas Coletivas: \(limiteAulasColetivas), Duração: \(duracaoMeses) meses"
-    }
 }
 
-let planoMensal = PlanoAssinatura(nome: "Mensal", valorMensalidade: 100.0, incluiPersonalTrainer: false, limiteAulasColetivas: 5, duracaoMeses: 1)
-let planoTrimestral = PlanoAssinatura(nome: "Trimestral", valorMensalidade: 270.0, incluiPersonalTrainer: true, limiteAulasColetivas: 10, duracaoMeses: 3)
-let planoAnual = PlanoAssinatura(nome: "Anual", valorMensalidade: 1000.0, incluiPersonalTrainer: true, limiteAulasColetivas: 20, duracaoMeses: 12)
+let planoMensal = PlanoAssinatura( //início da criação do catálogo em memória simulando um banco de dados com instâncias pré-definidas
+    nome: "Mensal",
+    valorMensalidade: 100,
+    incluiPersonalTrainer: false,
+    limiteAulasColetivas: 5,
+    duracaoMeses: 1
+)
 
-let catalogoPlanos: [String: PlanoAssinatura] = [
+let planoTrimestral = PlanoAssinatura(
+    nome: "Trimestral",
+    valorMensalidade: 270,
+    incluiPersonalTrainer: true,
+    limiteAulasColetivas: 10,
+    duracaoMeses: 3
+)
+
+let planoAnual = PlanoAssinatura(
+    nome: "Anual",
+    valorMensalidade: 1000,
+    incluiPersonalTrainer: true,
+    limiteAulasColetivas: 20,
+    duracaoMeses: 12
+)
+
+let catalogoPlanos: [String: PlanoAssinatura] = [ //catálogo em memória criado simulando o banco
     "Mensal": planoMensal,
     "Trimestral": planoTrimestral,
     "Anual": planoAnual
 ]
 
-class Pessoa {
+class Pessoa { //classe genérica para pessoas, com nome, e-mail e a função descritiva getDetails()
     var nome: String
     var email: String
 
@@ -53,43 +83,37 @@ class Pessoa {
         self.email = email
     }
 
-    func funcaoDescritiva() -> String {
-        return "Pessoa cadastrada"
+    func getDetails() -> String {
+        return "\nPessoa cadastrada, nome: \(nome), email: \(email)"
     }
 }
-class Aluno: Pessoa {
+
+class Aluno: Pessoa { //classe Aluno derivando da classe Pessoa, com matrícula, plano e nível, métodos para setar plano e nível novos e função getDetails() sobrescrita
     var matricula: String
     var plano: PlanoAssinatura
     var nivel: NivelExperiencia
 
-    init(
-        nome: String,
-        email: String,
-        matricula: String,
-        plano: PlanoAssinatura,
-        nivel: NivelExperiencia
-    ) {
+    init(nome: String, email: String, matricula: String, plano: PlanoAssinatura, nivel: NivelExperiencia) {
         self.matricula = matricula
         self.plano = plano
         self.nivel = nivel
-
         super.init(nome: nome, email: email)
     }
 
-    override func funcaoDescritiva() -> String {
-        return "Aluno da academia"
+    override func getDetails() -> String {
+        return "\nAluno da academia, nome: \(nome), matrícula: \(matricula), plano: \(plano.nome), nível: \(nivel)"
     }
 
     func atualizarPlano(novoPlano: PlanoAssinatura) {
-        self.plano = novoPlano
+        plano = novoPlano
     }
 
     func atualizarNivel(novoNivel: NivelExperiencia) {
-        self.nivel = novoNivel
+        nivel = novoNivel
     }
 }
 
-class Instrutor: Pessoa {
+class Instrutor: Pessoa { //classe Instrutor derivando da classe Pessoa, com especialidade e getDetails() sobrescrita
     var especialidade: CategoriaAula
 
     init(nome: String, email: String, especialidade: CategoriaAula) {
@@ -97,7 +121,7 @@ class Instrutor: Pessoa {
         super.init(nome: nome, email: email)
     }
 
-    override func funcaoDescritiva() -> String {
-        return "Instrutor especializado em \(especialidade)"
+    override func getDetails() -> String {
+        return "\nInstrutor da academia, nome: \(nome), email: \(email), especialidade: \(especialidade)"
     }
 }

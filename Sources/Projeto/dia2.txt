@@ -1,16 +1,17 @@
-//---------------------------------------------------------------DIA 2---------------------------------------------------------------
-protocol ContratoManutencao {
-    var nomeItem: String { get }
-    var historico: [String] { get set }
+//Nome: Ana Clara Cândido Pereira
+//---------------------------------------------------------------------------------------------------------DIA 2----------------------------------------------------------------------------------------------------------
+// O foco do segundo dia é a utilização de Contratos de Comportamento. Vocês devem modelar um contrato de manutenção que exija propriedades de leitura (nome do item e histórico) e ações (realização de reparo informando data e status de regularidade). Em seguida, implementem uma entidade de equipamento físico que obedeça a este contrato, contendo um estado de funcionamento que, quando defeituoso, deve obrigatoriamente fazer com que a tentativa de manutenção falhe.
 
-    func realizarReparo(
-        data: Date,
-        statusRegularidade: Bool
-    ) -> Bool
+// A segunda tarefa é reestruturar a arquitetura das aulas, abandonando a herança clássica. Desenvolvam um contrato base de "Aula" exigindo nome, instrutor, categoria e descrição. A partir dele, criem duas entidades independentes que assinem este contrato: turmas coletivas e treinos com personal. Na entidade de turmas coletivas, vocês deverão gerenciar inscrições controlando uma capacidade máxima e mínima. As inscrições só podem ser efetivadas se houver vagas e se o aluno já não estiver na turma.
+
+protocol ContratoManutencao { //contrato de manutenção exigindo propriedades de leitura e ações
+    var nomeItem: String { get }
+    var historico: [String] { get }
+    
+    func realizarManutencao(data: Date, statusRegularidade: Bool) -> Bool
 }
 
-class EquipamentoFisico: ContratoManutencao {
-
+class EquipamentoFisico: ContratoManutencao { //entidade de equipamento que obedece o contrato de manutenção
     var nomeItem: String
     var historico: [String]
     var estadoFuncionamento: Bool
@@ -21,43 +22,43 @@ class EquipamentoFisico: ContratoManutencao {
         self.historico = []
     }
 
-    func realizarReparo(
-        data: Date,
-        statusRegularidade: Bool
-    ) -> Bool {
+    func realizarManutencao(data: Date, statusRegularidade: Bool) -> Bool {
+        if estadoFuncionamento == false {
+            historico.append(
+                "Falha na manutenção em \(data) | Regular: \(statusRegularidade)"
+            )
 
-        // defeituoso = falha obrigatória
-        if !estadoFuncionamento {
+            print("\nManutenção falhou para \(nomeItem) porque o estado de funcionamento é defeituoso.")
             return false
         }
 
-        let reparo = """
-        Reparo em \(data)
-        Regularidade: \(statusRegularidade)
-        """
+        historico.append(
+            "Manutenção realizada em \(data) | Regular: \(statusRegularidade)"
+        )
 
-        historico.append(reparo)
-
+        print("\nManutenção realizada com sucesso para \(nomeItem).")
         return true
     }
 }
 
-protocol ContratoAula {
+protocol ContratoAula { //contrato base da aula
     var nome: String { get }
     var instrutor: Instrutor { get }
     var categoria: CategoriaAula { get }
     var descricao: String { get }
+
+    func getDetails() -> String
 }
 
-class TurmaColetiva: ContratoAula {
+class TurmaColetiva: ContratoAula { //turma coletiva que assina o contrato de aula
     var nome: String
     var instrutor: Instrutor
     var categoria: CategoriaAula
     var descricao: String
     var capacidadeMaxima: Int
     var capacidadeMinima: Int
-    private var inscritos: [Aluno]
-    
+    var inscritos: [Aluno]
+
     init(nome: String, instrutor: Instrutor, categoria: CategoriaAula, descricao: String, capacidadeMaxima: Int, capacidadeMinima: Int) {
         self.nome = nome
         self.instrutor = instrutor
@@ -67,28 +68,50 @@ class TurmaColetiva: ContratoAula {
         self.capacidadeMinima = capacidadeMinima
         self.inscritos = []
     }
-    
-    func inscreverAluno(aluno: Aluno) -> Bool {
-        if inscritos.count < capacidadeMaxima && !inscritos.contains(where: { $0.matricula == aluno.matricula }) {
-            inscritos.append(aluno)
-            return true
+
+    func getDetails() -> String {
+        return "\nTurma Coletiva, nome: \(nome), instrutor: \(instrutor.nome), categoria: \(categoria), descrição: \(descricao), capacidade máxima: \(capacidadeMaxima), capacidade mínima: \(capacidadeMinima), inscritos: \(inscritos.count)"
+    }
+
+    func inscreverAluno(aluno: Aluno) -> Bool { //evita superlotação
+        if inscritos.count >= capacidadeMaxima {
+            print("\nInscrição falhou para \(aluno.nome) na turma \(nome) devido à capacidade máxima atingida.")
+            return false
         }
-        return false
+
+        for inscrito in inscritos { //evita inscrição de aluno já inscrito
+            if inscrito.matricula == aluno.matricula {
+                print("\nInscrição falhou para \(aluno.nome) na turma \(nome) porque o aluno já está inscrito.")
+                return false
+            }
+        }
+
+        inscritos.append(aluno)
+        print("\nAluno \(aluno.nome) inscrito com sucesso na turma \(nome).")
+        return true
+    }
+
+    func turmaPodeAcontecer() -> Bool { //verifica se a turma pode acontecer com base na quantidade de inscritos e na capacidade mínima
+        return inscritos.count >= capacidadeMinima
     }
 }
 
-class TreinoPersonal: ContratoAula {
+class TreinoPersonal: ContratoAula { //treino com personal que assina o contrato de aula
     var nome: String
     var instrutor: Instrutor
     var categoria: CategoriaAula
     var descricao: String
     var aluno: Aluno
-    
+
     init(nome: String, instrutor: Instrutor, categoria: CategoriaAula, descricao: String, aluno: Aluno) {
         self.nome = nome
         self.instrutor = instrutor
         self.categoria = categoria
         self.descricao = descricao
         self.aluno = aluno
+    }
+
+    func getDetails() -> String {
+        return "\nTreino Personal, nome: \(nome), instrutor: \(instrutor.nome), categoria: \(categoria), descrição: \(descricao), aluno: \(aluno.nome)"
     }
 }

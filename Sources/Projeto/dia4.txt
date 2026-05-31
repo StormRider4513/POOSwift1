@@ -1,0 +1,126 @@
+//Nome: Ana Clara Cândido Pereira
+//---------------------------------------------------------------------------------------------------------DIA 4----------------------------------------------------------------------------------------------------------
+// A entrega final consiste em um roteiro prático de integração que simule o sistema em uso contínuo. Instanciem a central da academia e populem a memória com múltiplos perfis de instrutores e alunos em diferentes planos e níveis. O roteiro de execução deve testar rigorosamente as barreiras implementadas, provocando as seguintes rejeições: duplicação de cadastros, superlotação de salas e tentativa de uso de benefícios (como personal) por alunos com planos incompatíveis. Enguiçem um equipamento de propósito e façam o sistema de manutenção global identificá-lo e filtrá-lo automaticamente.
+
+// Para a defesa técnica do projeto, vocês deverão demonstrar as mecânicas de polimorfismo. Crie duas coleções heterogêneas de apresentação iterando em laços de repetição independentes: a primeira agrupando instrutores e alunos como uma hierarquia base, e a segunda agrupando diferentes tipologias de aulas agrupadas sob a assinatura de um mesmo contrato. Por último, encapsulem a geração de métricas aplicando uma extensão na central da academia, retornando um agrupamento consolidado de indicadores (totais de alunos, instrutores, aulas ativas e equipamentos danificados).
+
+extension Academia {
+    func gerarMetricas() -> String {
+        var equipamentosDanificados = 0
+
+        for equipamento in equipamentos.values {
+            if equipamento.estadoFuncionamento == false {
+                equipamentosDanificados += 1
+            }
+        }
+
+        return "\nTotal de alunos: \(alunosPorEmail.count)\nTotal de instrutores: \(instrutores.count)\nTotal de aulas ativas: \(aulas.count)\nEquipamentos danificados: \(equipamentosDanificados)"
+    }
+}
+
+//----------------------------------------------------------------------------------------------------------TESTES----------------------------------------------------------------------------------------------------------
+
+var academia = Academia()
+
+var instrutor1 = Instrutor(nome: "Carlos", email: "carlos@academia.com", especialidade: .spinning)
+var instrutor2 = Instrutor(nome: "Ana", email: "ana@academia.com", especialidade: .yoga)
+var instrutor3 = Instrutor(nome: "Marcos", email: "marcos@academia.com", especialidade: .musculacao)
+
+var aluno1 = Aluno(nome: "João", email: "joao@academia.com", matricula: "M001", plano: planoTrimestral, nivel: .intermediario)
+var aluno2 = Aluno(nome: "Maria", email: "maria@academia.com", matricula: "M002", plano: planoAnual, nivel: .avancado)
+var aluno3 = Aluno(nome: "Pedro", email: "pedro@academia.com", matricula: "M003", plano: planoMensal, nivel: .iniciante)
+
+print(academia.cadastrarInstrutor(instrutor: instrutor1))
+print(academia.cadastrarInstrutor(instrutor: instrutor1)) //tentando duplicar cadastro de instrutor
+print(academia.cadastrarInstrutor(instrutor: instrutor2))
+print(academia.cadastrarInstrutor(instrutor: instrutor3))
+
+print(academia.cadastrarAluno(aluno: aluno1))
+print(academia.cadastrarAluno(aluno: aluno1)) // tentando duplicar cadastro de aluno
+print(academia.cadastrarAluno(aluno: aluno2))
+print(academia.cadastrarAluno(aluno: aluno3))
+
+var equipamento1 = EquipamentoFisico(nomeItem: "Esteira", estadoFuncionamento: true)
+var equipamento2 = EquipamentoFisico(nomeItem: "Bicicleta", estadoFuncionamento: false) // equipamento com falha para testar manutenção
+var equipamento3 = EquipamentoFisico(nomeItem: "Leg Press", estadoFuncionamento: true)
+var equipamento4 = EquipamentoFisico(nomeItem: "Cadeira Extensora", estadoFuncionamento: true)
+
+print(academia.cadastrarEquipamento(equipamento: equipamento1))
+print(academia.cadastrarEquipamento(equipamento: equipamento2))
+print(academia.cadastrarEquipamento(equipamento: equipamento3))
+print(academia.cadastrarEquipamento(equipamento: equipamento3))// tentando duplicar cadastro de equipamento
+print(academia.cadastrarEquipamento(equipamento: equipamento4))
+
+
+var aula1 = TurmaColetiva(
+    nome: "Spinning",
+    instrutor: instrutor1,
+    categoria: .spinning,
+    descricao: "Aula de spinning para todos os níveis",
+    capacidadeMaxima: 1,
+    capacidadeMinima: 1
+)
+
+print(academia.cadastrarAula(aula: aula1)) //cadastrando turma coletiva
+print(academia.cadastrarAula(aula: aula1)) // tentando duplicar cadastro
+
+print(academia.matricularAlunoEmTurma(alunoEmail: "joao@academia.com", nomeTurma: "Spinning"))
+print(academia.matricularAlunoEmTurma(alunoEmail: "maria@academia.com", nomeTurma: "Spinning")) // tentando inscrever mais alunos do que a capacidade máxima da aula
+
+
+print(academia.agendarTreinoPersonal(
+    alunoEmail: "joao@academia.com",
+    instrutorEmail: "ana@academia.com",
+    categoria: .musculacao,
+    descricao: "Treino personal para João"
+))
+
+print(academia.agendarTreinoPersonal(// tentando agendar o mesmo treino personal para o mesmo aluno e instrutor
+    alunoEmail: "joao@academia.com",
+    instrutorEmail: "ana@academia.com",
+    categoria: .musculacao,
+    descricao: "Treino personal para João"
+))
+
+print(academia.agendarTreinoPersonal(//tentando agendar treino personal para aluno com plano que não inclui personal trainer
+    alunoEmail: "pedro@academia.com",
+    instrutorEmail: "ana@academia.com",
+    categoria: .musculacao,
+    descricao: "Treino personal para Pedro"
+)) 
+
+print("\nFalhas: \(academia.realizarManutencaoEquipamentos())") //deve identificar o equipamento com falha e retornar seu nome na lista de falhas
+
+print(academia.getDetails()) //resumo do estado atual da academia
+ 
+var pessoas: [Pessoa] = Array(academia.instrutores.values) + Array(academia.alunosPorMatricula.values) //coleção heterogênea agrupando instrutores e alunos como pessoas
+
+for pessoa in pessoas { 
+    print(pessoa.getDetails())
+}
+
+var listaAulas: [ContratoAula] = Array(academia.aulas.values) //coleção heterogênea agrupando todas as aulas sob a assinatura do mesmo contrato
+
+for aula in listaAulas {
+    print(aula.getDetails())
+}
+
+print(academia.gerarMetricas()) //teste de geração de métricas consolidando indicadores da academia
+
+print(academia.alterarCadastro( //testando alteração de cadastro de aluno para instrutor
+        email: "joao@academia.com",
+        novoTipo: .instrutor,
+        novaEspecialidade: .funcional
+    )
+)
+
+print(academia.alterarCadastro( //testando alteração de cadastro de instrutor para aluno
+        email: "ana@academia.com",
+        novoTipo: .aluno,
+        novoPlano: planoTrimestral
+    )
+)
+
+print(academia.sairDaAcademia(email: "maria@academia.com")) //testando saída de um aluno da academia, o que deve remover seu cadastro e registrar a mudança no histórico
+
+print(academia.listarHistorico()) //listando o histórico de mudanças na academia
